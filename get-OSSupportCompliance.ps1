@@ -181,8 +181,8 @@ foreach ($Computer in $Computers){
 				'10.0 (18362)'{
 					$Build="1903"
 					if ($Computer.OperatingSystem -like "*Enterprise*") {
-						$MainstreamSupport="December 8 2022"		
-						$ExtendedSupport="December 8 2022"
+						$MainstreamSupport="December 8 2021"		
+						$ExtendedSupport="December 8 2021"
 					}
 					else{
 						$MainstreamSupport="December 8 2021"		
