@@ -185,8 +185,8 @@ foreach ($Computer in $Computers){
 						$ExtendedSupport="December 8 2022"
 					}
 					else{
-						$MainstreamSupport="December 8 2022"		
-						$ExtendedSupport="December 8 2022"	
+						$MainstreamSupport="December 8 2021"		
+						$ExtendedSupport="December 8 2021"	
 					}
 				}
 				'10.0 (18922)'{
