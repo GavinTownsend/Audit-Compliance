@@ -1,4 +1,3 @@
-
 <#
 	.SYNOPSIS
 		Checks OS version to determine compliance for Microsoft Mainstream or Extended Support.
@@ -20,7 +19,7 @@
 		Gavin Townsend July 2019
 		
 	.NOTES	
-		Server 2008 https://support.microsoft.com/en-au/help/4456235/end-of-support-for-windows-server-2008-and-windows-server-2008-r2
+		Server 2008     https://support.microsoft.com/en-au/help/4456235/end-of-support-for-windows-server-2008-and-windows-server-2008-r2
 		Windows 10	https://support.microsoft.com/en-au/help/13853/windows-lifecycle-fact-sheet
 		General		https://support.microsoft.com/en-au/lifecycle/search
 
