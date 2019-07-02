@@ -9,9 +9,9 @@
 		- Identifies the Mainstream or Extended Support dates 
 		
 		- Compares current date with end of support dates to determine compliance
-				* Compliant     = Now is earlier than the user defined Compliance Warning Date
-				* Warning       = Now is earlier than the Microsoft End of Support Date (but later that the warning date)
-				* Non-Compliant = Now is later than the Microsoft End of Support Date
+			* Compliant     = Now is earlier than the user defined Compliance Warning Date
+			* Warning       = Now is earlier than the Microsoft End of Support Date (but later that the warning date)
+			* Non-Compliant = Now is later than the Microsoft End of Support Date
 
 	.EXAMPLE
 		.\get-OSSupportCompliance.ps1
