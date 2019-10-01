@@ -4,8 +4,8 @@
 	
 	.NOTES
 		Script Name:	Test-ADPasswords.ps1
-		Created By: 	Gavin Townsend
-		Date: 			October 2019
+		Created By:	Gavin Townsend
+		Date:		October 2019
 		
 	.DESCRIPTION
 		The script performs the follow actions:
@@ -36,7 +36,7 @@
 		
 		3. DSInternals Framework - https://github.com/MichaelGrafnetter/DSInternals
 			
-			If using PowerShell v5 simply run:  Install-Module -Name DSInternals -Force
+			If using PowerShell v5 simply run:	Install-Module -Name DSInternals -Force
 			
 			Else follow "Offline Module Distribution" steps via link above
 			
@@ -55,7 +55,7 @@
 #>
 
 #Location of HIBP dictionary file and working directory
-$AuditPath = "c:\audit"  
+$AuditPath = "c:\audit"	 
 
 #Enable functions as required
 $CreateNTDS = $TRUE
@@ -68,25 +68,25 @@ $ResetPassword = $FALSE
 #---------
 
 Function Write-Both {
-   Param ([string]$LogString)
-   $LogFile = "$AuditPath\Audit.log"
-   Add-content $Logfile -value $LogString
-   Write-Host $LogString
+	Param ([string]$LogString)
+	$LogFile = "$AuditPath\Audit.log"
+	Add-content $Logfile -value $LogString
+	Write-Host $LogString
 }
 Write-Both "$(Get-Date) - New script run from $Env:Computername by $env:username"
 
 
 Function Create-NTDS{
-    param(
-        [Parameter(Mandatory = $true)][System.IO.FileInfo] $AuditPath
-    )
+	param(
+		[Parameter(Mandatory = $true)][System.IO.FileInfo] $AuditPath
+	)
 
 	Begin{
 		Write-Both "`t START: Function CreateNTDS"
 	}
 	process{
 	
-	    Try{
+		Try{
 			if ($CreateNTDS -eq $TRUE){
 				ntdsutil "activate instance ntds" ifm "create Full $AuditPath" q q
 				Write-Both "`t FINISH: Active Directory offline copy completed to $AuditPath"
@@ -95,10 +95,10 @@ Function Create-NTDS{
 				Write-Both "`t CreateNTDS = FALSE (function skipped)"
 			}
 		}
-        Catch{
+		Catch{
 			Write-Both "ERROR: $($_.Exception.Message)"
-            break
-        }
+			break
+		}
 	}
 	end{}
 }
@@ -106,8 +106,8 @@ Function Create-NTDS{
 
 Function Test-Passwords{
 	param(
-        [Parameter(Mandatory = $true)][System.IO.FileInfo] $AuditPath
-    )
+		[Parameter(Mandatory = $true)][System.IO.FileInfo] $AuditPath
+	)
 
 	Begin{
 		Write-Both "`t START: Function Test-Passwords"
@@ -118,9 +118,9 @@ Function Test-Passwords{
 		$Dictionary = "$AuditPath\pwned-passwords-ntlm-ordered-by-hash-v5.txt" 
 		$Report = "$AuditPath\AD Password Quality Report $(get-date -f yyyy-MM-dd).txt"
 		$BadPasswordList = @("Winter2019","Spring2019","Summer2019","Autumn2019""Password123!","Password","12345678","Pa$$w0rd","qwertyuiop") 
-		$OU = "*OU=Users,DC=MyDomain,DC=Com"  # <- Ensure to include the wildcard
+		$OU = "*OU=Users,DC=MyDomain,DC=com"  # <- Ensure to include the wildcard
 
-	    Try{
+		Try{
 			if ($TestPasswords -eq $TRUE){
 				$Results = Get-ADDBAccount -All -DBPath $DB -BootKey $Key | `
 				where DistinguishedName -like $OU | `
@@ -134,10 +134,10 @@ Function Test-Passwords{
 				Write-Both "`t TestPasswords = FALSE (function skipped)"
 			}
 		}
-        Catch{
+		Catch{
 			Write-Both "ERROR: $($_.Exception.Message)"
-            break
-        }
+			break
+		}
 	}
 	end{
 		Return $Results
@@ -155,7 +155,7 @@ Function Send-Email{
 		$SMTPServer = "smtp.mydomain.com"
 		$From = "infosec@mydomain.com"
 
-	    Try{
+		Try{
 			if ($SendEmail -eq $TRUE){
 				Send-MailMessage -To $To -From $From -Subject "Password Audit" -SmtpServer $SMTPServer -body $MailBody -BodyAsHtml
 				Write-Both "`t Email sent to $To"
@@ -164,10 +164,10 @@ Function Send-Email{
 				Write-Both "`t Send Email = FALSE (email would have gone to $To)"
 			}
 		}
-        Catch{
+		Catch{
 			Write-Both "ERROR: $($_.Exception.Message)"
-            break
-        }
+			break
+		}
 	}
 	end{}
 }
@@ -175,11 +175,11 @@ Function Send-Email{
 
 Function Reset-Password{
 	param(
-        [string]$Account
-    )
+		[string]$Account
+	)
 
 	process{	
-	    Try{
+		Try{
 			if ($ResetPassword -eq $TRUE){
 				Get-ADUser -Identity $Account | Set-ADUser CannotChangePassword:$FALSE -PasswordNeverExpires:$FALSE -ChangePasswordAtLogon:$TRUE
 				Write-Both "`t Password reset flagged for $Account"
@@ -188,10 +188,10 @@ Function Reset-Password{
 				Write-Both "`t Reset Password = FALSE (password reset would have been flagged for $Account)"
 			}
 		}
-        Catch{
+		Catch{
 			Write-Both "ERROR: $($_.Exception.Message)"
-            break
-        }
+			break
+		}
 	}
 	end{}
 }
@@ -224,7 +224,7 @@ Whilst it may be a coincidence, passwords are typuically on the list because:</b
 Your password must be changed as soon as possible</br>
 Make sure your password is long, unique and random. Here is a short (3min) video on some <a href='https://youtu.be/Nl-VA9w9cZk'>good and bad password habits</a>.</br>
 </br>
-NB. We do not know your password. The audit is conducted securely by our Information Security team, by comparing offline 'hash files'.  </br> 
+NB. We do not know your password. The audit is conducted securely by our Information Security team, by comparing offline 'hash files'.	</br> 
 If you have any questions, please contact your local IT Service Desk.</br>
 </br>
 Regards </br>
