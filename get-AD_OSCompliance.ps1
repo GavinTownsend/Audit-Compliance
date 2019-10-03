@@ -1,25 +1,38 @@
+
 <#
 	.SYNOPSIS
 		Checks OS version to determine compliance for Microsoft Mainstream or Extended Support.
-		
+	
+	.NOTES
+		Script Name:	get-AD_OSCompliance.ps1
+		Created By:		Gavin Townsend
+		Date:			August 2019
+	
 	.DESCRIPTION
-		- Uses Active Directory plugin for PowerShell 
 		- Collects Operating System and Version information for each server and computer
 		- Identifies the Mainstream or Extended Support dates 
 		
 		- Compares current date with end of support dates to determine compliance
-			* Compliant     = $Now is earlier than the user defined Compliance Warning Date
-			* Warning       = $Now is earlier than the Microsoft End of Support Date (but later that the warning date)
-			* Non-Compliant = $Now is later than the Microsoft End of Support Date
+				* Compliant		= Now is earlier than the user defined Compliance Warning Date
+				* Warning		= Now is earlier than the Microsoft End of Support Date (but later that the warning date)
+				* Non-Compliant = Now is later than the Microsoft End of Support Date
 
+	.AUDIT CRITERIA
+		Complete a discovery scan of operating systems in AD
+			
+		Note any machines where Compliant = 'Warning' or 'No' in the CSV report
+				
 	.EXAMPLE
-		.\get-OSSupportCompliance.ps1
+		.\get-AD_OSCompliance.ps1
 
-	.AUTHOR
-		Gavin Townsend July 2019
+	.REQUIREMENTS
+		Active Directory module
 		
-	.NOTES	
-		Server 2008     https://support.microsoft.com/en-au/help/4456235/end-of-support-for-windows-server-2008-and-windows-server-2008-r2
+	.VERSION HISTORY
+		1.0		June 2019	Gavin Townsend		Original Build
+		
+	.INFO	
+		Server 2008 https://support.microsoft.com/en-au/help/4456235/end-of-support-for-windows-server-2008-and-windows-server-2008-r2
 		Windows 10	https://support.microsoft.com/en-au/help/13853/windows-lifecycle-fact-sheet
 		General		https://support.microsoft.com/en-au/lifecycle/search
 
@@ -27,21 +40,22 @@
 
 
 #Variables
-$UseExtendedSupport = $TRUE   #Toggle TRUE/FALSE to measure compliance against Mainstream or Extended Support dates
-$WarnDays = 365               #Warn if coming out of support within X days of End of Support Date
+$UseExtendedSupport = $TRUE	  #Toggle TRUE/FALSE to measure compliance against Mainstream or Extended Support dates
+$WarnDays = 365				  #Warn if coming out of support within X days of End of Support Date
 
 $Now = get-date
 $OutData = @()
 $Domain = $(get-addomain).dnsroot
-$LogFile = "C:\Temp\OSCompliance $Domain $(get-date -f yyyy-MM-dd).csv"
+$Log = "C:\Temp\Audit\$Domain OS Compliance $(get-date -f yyyy-MM-dd).csv"
 
 
 #Query
-$Computers = Get-ADComputer -Filter {Enabled -eq $True} -Property * | Select Name,OperatingSystem,OperatingSystemVersion,distinguishedName,LastLogonDate
+$Computers = Get-ADComputer -Filter {Enabled -eq $True} -Property * | Select Enabled,Name,OperatingSystem,OperatingSystemVersion,distinguishedName,LastLogonDate
 
 foreach ($Computer in $Computers){
 
 	#Properties
+	$Enabled = $Computer.Enabled
 	$Name = $Computer.Name
 	$DN = $Computer.distinguishedName
 	$OS = $Computer.OperatingSystem
@@ -242,6 +256,7 @@ foreach ($Computer in $Computers){
 	#Add Data to Array
 	$obj = New-Object PSobject
 	$obj | Add-Member NoteProperty -Name "Type" -Value $Type
+	$obj | Add-Member NoteProperty -Name "Enabled" -Value $Enabled
 	$obj | Add-Member NoteProperty -Name "Name" -Value $Computer.Name
 	$obj | Add-Member NoteProperty -Name "DN" -Value $Computer.distinguishedName
 	$obj | Add-Member NoteProperty -Name "Last Logon" -Value $LastLogon
@@ -256,13 +271,15 @@ foreach ($Computer in $Computers){
 
 #Count
 Write-Host "There are $CountServers servers and $CountComputers computers in the $Domain domain."
-write-host "Compliant: $CountYes"
-write-host "Warning: $CountWarn"
-write-host "Non-Compliant: $CountNo"
+write-host ""
+write-host "Compliant: $CountYes" -foregroundcolor green
+write-host "Warning: $CountWarn" -foregroundcolor yellow
+write-host "Non-Compliant: $CountNo" -foregroundcolor red
 write-host "Unknown or TBA: $CountUnknown"
 write-host ""
-Write-Host "Full details have been exported to $LogFile"
+
 
 #Export
 $OutData = $OutData | sort -Property "Type","Name"
-$OutData | Export-CSV $LogFile -notype
+$OutData | Export-CSV $Log -notype
+write-host "Log Export Complete to $Log" -foregroundcolor yellow
