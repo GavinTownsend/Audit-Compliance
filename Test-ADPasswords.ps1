@@ -216,7 +216,7 @@ During a recent audit, your computer login password was found in a blocklist or 
 <b>What does this mean?</b></br>
 Passwords that are found in breached data are what we call 'known bad'. That is, these passwords have been exposed on the internet and represent a risk to those using them.</br>
 </br>
-Whilst it may be a coincidence, passwords are typuically on the list because:</br>
+Whilst it may be a coincidence, passwords are typically on the list because:</br>
    - You have re-used the same password elsewhere (and that service was compromised in the past).</br>
    - You are using a weak password which is commonly used by other people.</br>
 </br>
