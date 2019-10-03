@@ -61,8 +61,8 @@ ForEach ($Computer in $Computers){
 				#Get AV product
 				write-host "Working on $computername"
 				$AntiVirusProduct = Get-WmiObject -Namespace "root\SecurityCenter2" -Class AntiVirusProduct -ComputerName $computername -ErrorAction Stop 
-				$AV = $AntiVirusProduct.displayName[0]
-				$Status = $AntiVirusProduct.productState[0]
+				$AV = $AntiVirusProduct.displayName[0]  		#  <- Change to [1] to see additional AV products
+				$Status = $AntiVirusProduct.productState[0]  	#  <- Change to [1] to see additional AV products
 				
 				# Get Status from Hex
     			$hex = [convert]::ToString($Status, 16).PadLeft(6,'0')
