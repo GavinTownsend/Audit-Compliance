@@ -37,7 +37,9 @@
 #>
 
 
-$Domain = $(get-addomain).dnsroot
+Try{$Domain = $(get-addomain).dnsroot}
+Catch{$Domain = ""}
+
 $Log = "C:\temp\Audit\$Domain FW Scan $(get-date -f yyyy-MM-dd).txt"
 
 Function Write-Log {
