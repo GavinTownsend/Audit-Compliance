@@ -1,4 +1,3 @@
-
 <#
 	.SYNOPSIS
 		Checks OS version to determine compliance for Microsoft Mainstream or Extended Support.
@@ -45,7 +44,9 @@ $WarnDays = 365				  #Warn if coming out of support within X days of End of Supp
 
 $Now = get-date
 $OutData = @()
-$Domain = $(get-addomain).dnsroot
+Try{$Domain = $(get-addomain).dnsroot}
+Catch{$Domain = ""}
+
 $Log = "C:\Temp\Audit\$Domain OS Compliance $(get-date -f yyyy-MM-dd).csv"
 
 
@@ -281,5 +282,5 @@ write-host ""
 
 #Export
 $OutData = $OutData | sort -Property "Type","Name"
-$OutData | Export-CSV $Log -notype
+$OutData | Export-CSV $Log -notype -Encoding UTF8
 write-host "Log Export Complete to $Log" -foregroundcolor yellow
