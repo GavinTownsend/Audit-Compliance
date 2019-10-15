@@ -36,7 +36,9 @@
 #>
 
 
-$Domain = $(get-addomain).dnsroot
+Try{$Domain = $(get-addomain).dnsroot}
+Catch{$Domain = ""}
+
 $Log = "C:\temp\Audit\$Domain Update History $(get-date -f yyyy-MM-dd).csv"
 
 $Computers = Get-ADComputer -Filter {OperatingSystem -LIKE "*server*" -AND Enabled -eq $TRUE} -Property Name  
@@ -96,7 +98,7 @@ foreach ($Computer in $Computers.name) {
 	}
 }
 
-$Data | sort-object -property Computer,Date -descending | Export-Csv $Log -notype
+$Data | sort-object -property Computer,Date -descending | Export-Csv $Log -notype -Encoding UTF8
 
 write-host ""
 write-host "There were $EventCount Windows Update events listed from $ComputerCount computers"
