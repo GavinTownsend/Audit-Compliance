@@ -33,6 +33,8 @@
 		
 		NB. Only returns values where O365 is the Identity Provider (IDp). Does not return values for 3rd parties (eg ADFS, Okta etc)
 		
+		Global administrator role
+		
 	.AUDIT CRITERIA
 		Complete a discovery scan of O365 Users
 		
@@ -50,7 +52,9 @@
 Function Get-O365MFAStatus{
 	$UserData=@()
 	$objRole=@()
-	$Domain = $(get-addomain).dnsroot
+	Try{$Domain = $(get-addomain).dnsroot}
+	Catch{$Domain = ""}
+
 	$Log = "C:\temp\Audit\$Domain O365 User MFA Status $(get-date -f yyyy-MM-dd).csv"
 	
 	try{
@@ -89,7 +93,7 @@ Function Get-O365MFAStatus{
 			$UserData += $objRole
 		}
 		
-		$UserData | Export-Csv -NoTypeInformation $Log	
+		$UserData | Export-Csv -NoTypeInformation $Log -Encoding UTF8
 		write-host ""
 		write-host "CSV Export Complete to $Log" -foregroundcolor yellow
 	}
