@@ -41,7 +41,6 @@
 		1.0		Oct 2019	Gavin Townsend		Original Build
 		
 	.INFO	
-		Server 2008 https://support.microsoft.com/en-au/help/4456235/end-of-support-for-windows-server-2008-and-windows-server-2008-r2
 		Windows 10	https://support.microsoft.com/en-au/help/13853/windows-lifecycle-fact-sheet
 		General		https://support.microsoft.com/en-au/lifecycle/search
 
@@ -54,12 +53,16 @@ $WarnDays = 365				  #Warn if coming out of support within X days of End of Supp
 
 $Now = get-date
 $OutData = @()
-$Domain = $(get-addomain).dnsroot
+Try{$Domain = $(get-addomain).dnsroot}
+Catch{$Domain = ""}
+
 $Log = "C:\Temp\Audit\$Domain O365 OS Compliance $(get-date -f yyyy-MM-dd).csv"
 
 
 #Query
 $Devices = Get-MsolDevice -All |? {$_.Enabled -eq $True} | Select Enabled,DisplayName,DeviceOsType,DeviceOsVersion,ApproximateLastLogonTimestamp
+$Edition = Read-Host 'Enter machine edition type (ie Enterprise or Professional)'
+$Edition.ToLower()
 
 foreach ($Device in $Devices){
 
@@ -69,205 +72,150 @@ foreach ($Device in $Devices){
 	$OS = $Device.DeviceOsType
 	$Version = $Device.DeviceOsVersion
 	$LastLogon = $Device.ApproximateLastLogonTimestamp
+	$Type = "Computer"
 
-	#Servers
-	if ($OS -like "*Server*") {
-		$CountServers++
-		$Type = "Server"
-		$Build="N/A" 
-	
-		if ($OS -like "Windows Server 2000*") {
-			$MainstreamSupport="June 6 2005"
-			$ExtendedSupport="July 13 2010"
-		}
-		elseif ($OS -like "Windows Server 2003*") {
-			$MainstreamSupport="July 13 2010"
-			$ExtendedSupport="July 14 2015"
-		}
-		elseif ($OS -like "Windows Server 2008*") {
-			$MainstreamSupport="April 9 2013"
-			$ExtendedSupport="January 14 2020"
-		}
-		elseif ($OS -like "Windows Server 2012*") {
-			$MainstreamSupport="October 9 2018"		
-			$ExtendedSupport="October 10 2023"
-		}
-		elseif ($OS -like "Windows Server 2016*") {
-			$MainstreamSupport="January 11 2022"		
-			$ExtendedSupport="January 11 2027"
-		}
-		elseif ($OS -like "Windows Server 2019*") {
-			$MainstreamSupport="TBA"		
-			$ExtendedSupport="TBA"
-		}
-		else {
-			$MainstreamSupport="Unknown"		
-			$ExtendedSupport="Unknown"
-		}
-	}
-	Else{
-		$Type = "Computer"
+	#Windows 10 Versions
+	if ($OS -like "Windows") {
 		$CountComputers++
 	
-		#Legacy Computers
-		if ($OS -like "Windows XP*") {
-			$Build="N/A" 
-			$MainstreamSupport="April 14 2009"
-			$ExtendedSupport="April 8 2014"
-		}
-		elseif ($OS -like "Windows Vista*") {
-			$Build="N/A" 
-			$MainstreamSupport="April 10 2012"
-			$ExtendedSupport="April 11 2017"
-		}
-		elseif ($OS -like "Windows 7*") {
-			$Build="N/A" 
-			$MainstreamSupport="January 13 2015"
-			$ExtendedSupport="January 14 2020"
-		}
-		elseif ($OS -like "Windows 8*") {
-			$Build="N/A"
-			$MainstreamSupport="January 9 2018"		
-			$ExtendedSupport="January 10 2023"
-		}
-		
-		#Windows 10 Versions
-		elseif ($OS -like "Windows 10*") {
-			switch($Version){
-				'10.0 (10240)'{
-					$Build="1507"
-					$MainstreamSupport="May 9 2017"		
-					$ExtendedSupport="May 9 2017"
+		switch -wildcard ($Version){
+			'10.0.10240*'{
+				$Build="1507"
+				$MainstreamSupport="May 9 2017"		
+				$ExtendedSupport="May 9 2017"
+			}
+			'10.0.10586*'{
+				$Build="1511"
+				$MainstreamSupport="October 10 2017"		
+				$ExtendedSupport="October 10 2017"
+			}
+			'10.0.14393*'{
+				$Build="1607"
+				if ($Edition -eq "enterprise") {
+					$MainstreamSupport="April 9 2019"		
+					$ExtendedSupport="April 9 2019"
 				}
-				'10.0 (10586)'{
-					$Build="1511"
-					$MainstreamSupport="October 10 2017"		
-					$ExtendedSupport="October 10 2017"
+				else{
+					$MainstreamSupport="April 10 2018"		
+					$ExtendedSupport="April 10 2018"
 				}
-				'10.0 (14393)'{
-					$Build="1607"
-					if ($Computer.OperatingSystem -like "*Enterprise*") {
-						$MainstreamSupport="April 9 2019"		
-						$ExtendedSupport="April 9 2019"
-					}
-					else{
-						$MainstreamSupport="April 10 2018"		
-						$ExtendedSupport="April 10 2018"
-					}
+			}
+			'10.0.15063*'{
+				$Build="1703"
+				if ($Edition -eq "enterprise") {
+					$MainstreamSupport="October 8 2019"		
+					$ExtendedSupport="October 8 2019"	
 				}
-				'10.0 (15063)'{
-					$Build="1703"
-					if ($Computer.OperatingSystem -like "*Enterprise*") {
-						$MainstreamSupport="October 8 2019"		
-						$ExtendedSupport="October 8 2019"	
-					}
-					else{
-						$MainstreamSupport="October 9 2018"		
-						$ExtendedSupport="October 9 2018"	
-					}	
+				else{
+					$MainstreamSupport="October 9 2018"		
+					$ExtendedSupport="October 9 2018"	
+				}	
+			}
+			'10.0.16299*'{
+				$Build="1709"
+				if ($Edition -eq "enterprise") {
+					$MainstreamSupport="April 14 2020"		
+					$ExtendedSupport="April 14 2020"	
 				}
-				'10.0 (16299)'{
-					$Build="1709"
-					if ($Computer.OperatingSystem -like "*Enterprise*") {
-						$MainstreamSupport="April 14 2020"		
-						$ExtendedSupport="April 14 2020"	
-					}
-					else{
-						$MainstreamSupport="April 9 2019"		
-						$ExtendedSupport="April 9 2019"	
-					}	
+				else{
+					$MainstreamSupport="April 9 2019"		
+					$ExtendedSupport="April 9 2019"	
+				}	
+			}
+			'10.0.17134*'{
+				$Build="1803" 
+				if ($Edition -eq "enterprise") {
+					$MainstreamSupport="November 10 2020"		
+					$ExtendedSupport="November 10 2020"	
 				}
-				
-				'10.0 (17134)'{
-					$Build="1803" 
-					if ($Computer.OperatingSystem -like "*Enterprise*") {
-						$MainstreamSupport="November 10 2020"		
-						$ExtendedSupport="November 10 2020"	
-					}
-					else{
-						$MainstreamSupport="November 12 2019"		
-						$ExtendedSupport="November 12 2019"	
-					}	
+				else{
+					$MainstreamSupport="November 12 2019"		
+					$ExtendedSupport="November 12 2019"	
+				}	
+			}
+			'10.0.17763*'{
+				$Build="1809"
+				if ($Edition -eq "enterprise") {
+					$MainstreamSupport="May 11 2021"		
+					$ExtendedSupport="May 11 2021"	
 				}
-				'10.0 (17763)'{
-					$Build="1809"
-					if ($Computer.OperatingSystem -like "*Enterprise*") {
-						$MainstreamSupport="May 11 2021"		
-						$ExtendedSupport="May 11 2021"	
-					}
-					else{
-						$MainstreamSupport="May 12 2020"		
-						$ExtendedSupport="May 12 2020"	
-					}	
+				else{
+					$MainstreamSupport="May 12 2020"		
+					$ExtendedSupport="May 12 2020"	
+				}	
+			}
+			'10.0.18362*'{
+				$Build="1903"
+				if ($Edition -eq "enterprise") {
+					$MainstreamSupport="December 8 2021"		
+					$ExtendedSupport="December 8 2021"
 				}
-				'10.0 (18362)'{
-					$Build="1903"
-					if ($Computer.OperatingSystem -like "*Enterprise*") {
-						$MainstreamSupport="December 8 2021"		
-						$ExtendedSupport="December 8 2021"
-					}
-					else{
-						$MainstreamSupport="December 8 2021"		
-						$ExtendedSupport="December 8 2021"	
-					}
+				else{
+					$MainstreamSupport="December 8 2021"		
+					$ExtendedSupport="December 8 2021"	
 				}
-				'10.0 (18922)'{
-					$Build="TBA"
-					if ($Computer.OperatingSystem -like "*Enterprise*") {
-						$MainstreamSupport="TBA"		
-						$ExtendedSupport="TBA"
-					}
-					else{
-						$MainstreamSupport="TBA"		
-						$ExtendedSupport="TBA"
-					}
+			}
+			'10.0.18922*'{
+				$Build="TBA"
+				if ($Edition -eq "enterprise") {
+					$MainstreamSupport="TBA"		
+					$ExtendedSupport="TBA"
 				}
-				default {
-					$Build="Unknown" 
-					$MainstreamSupport="Unknown"
-					$ExtendedSupport="Unknown"
+				else{
+					$MainstreamSupport="TBA"		
+					$ExtendedSupport="TBA"
 				}
+			}
+			default {
+				$Build="Unknown" 
+				$MainstreamSupport="Unknown"
+				$ExtendedSupport="Unknown"
 			}
 		}
 	}
 
 	#Verify Compliance
-	If ($UseExtendedSupport -eq $TRUE){
-		$Support = $ExtendedSupport
-	}
-	else{
-		$Support = $MainstreamSupport
-	}
-	
-	if ($Support -eq "Unknown" -OR $Support -eq "N/A" -OR $Support -eq "TBA"){
-		$Compliant = $Support
-		$CountUnknown++
-	}
-	else{
-		$SupportDate = [datetime]::parseexact($Support, 'MMMM d yyyy', $null)
-		$WarnDate = ($SupportDate).AddDays(-$WarnDays)
-	
-		if ($Now -le $WarnDate){
-			$Compliant="Yes"
-			$CountYes++
-		}
-		elseif ($Now -le $SupportDate){
-			$Compliant="Warning"
-			$CountWarn++
+	Try{
+		If ($UseExtendedSupport -eq $TRUE){
+			$Support = $ExtendedSupport
 		}
 		else{
-			$Compliant="No"
-			$CountNo++
+			$Support = $MainstreamSupport
 		}
+		
+		if ($Support -eq "Unknown" -OR $Support -eq "N/A" -OR $Support -eq "TBA"){
+			$Compliant = $Support
+			$CountUnknown++
+		}
+		else{
+			$SupportDate = [datetime]::parseexact($Support, 'MMMM d yyyy', $null)
+			$WarnDate = ($SupportDate).AddDays(-$WarnDays)
+		
+			if ($Now -le $WarnDate){
+				$Compliant="Yes"
+				$CountYes++
+			}
+			elseif ($Now -le $SupportDate){
+				$Compliant="Warning"
+				$CountWarn++
+			}
+			else{
+				$Compliant="No"
+				$CountNo++
+			}
+		}
+	}
+	Catch{
+		$Compliant="Unknown"
 	}
 	
 	#Add Data to Array
 	$obj = New-Object PSobject
 	$obj | Add-Member NoteProperty -Name "Type" -Value $Type
 	$obj | Add-Member NoteProperty -Name "Enabled" -Value $Enabled
-	$obj | Add-Member NoteProperty -Name "Name" -Value $Computer.Name
+	$obj | Add-Member NoteProperty -Name "Name" -Value $Name
 	$obj | Add-Member NoteProperty -Name "Last Logon" -Value $LastLogon
-	$obj | Add-Member NoteProperty -Name "Operating System" -Value $Computer.OperatingSystem
+	$obj | Add-Member NoteProperty -Name "Operating System" -Value $OS
 	$obj | Add-Member NoteProperty -Name "Version" -Value $Version
 	$obj | Add-Member NoteProperty -Name "Build" -Value $Build
 	$obj | Add-Member NoteProperty -Name "Support" -Value $Support
@@ -277,7 +225,7 @@ foreach ($Device in $Devices){
 }
 
 #Count
-Write-Host "There are $CountServers servers and $CountComputers computers in the $Domain domain."
+Write-Host "There are $CountComputers computers in the $Domain domain."
 write-host ""
 write-host "Compliant: $CountYes" -foregroundcolor green
 write-host "Warning: $CountWarn" -foregroundcolor yellow
@@ -288,5 +236,5 @@ write-host ""
 
 #Export
 $OutData = $OutData | sort -Property "Type","Name"
-$OutData | Export-CSV $Log -notype
+$OutData | Export-CSV $Log -notype -Encoding UTF8
 write-host "Log Export Complete to $Log" -foregroundcolor yellow
