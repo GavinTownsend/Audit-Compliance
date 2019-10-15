@@ -33,6 +33,8 @@
 		
 		NB. Only returns values where O365 is the Identity Provider (IDp). Does not return values for 3rd parties (eg ADFS, Okta etc)
 		
+		Global administrator role
+		
 	.AUDIT CRITERIA
 		Complete a discovery scan of O365 Administrators
 		
@@ -50,7 +52,9 @@
 Function Get-O365AdminMFAStatus{
 	$AdminData=@()
 	$objRole=@()
-	$Domain = $(get-addomain).dnsroot
+	Try{$Domain = $(get-addomain).dnsroot}
+	Catch{$Domain = ""}
+
 	$Log = "C:\temp\Audit\$Domain O365 Admin MFA Status $(get-date -f yyyy-MM-dd).csv"
 	
 	try{
@@ -63,11 +67,11 @@ Function Get-O365AdminMFAStatus{
 				$MsUser = $Member | Get-MsolUser
 				if($MsUser.StrongAuthenticationMethods.Count -eq 0) {
 					$Enabled = "False"
-					write-host $Role - $Member.DisplayName "No MFA enabled" -foregroundcolor red
+					write-host $Role - $Member.DisplayName $Member.UserPrincipalName "No MFA enabled" -foregroundcolor red
 				}
 				Else{
 					$Enabled = "True"
-					write-host $Role - $Member.DisplayName "MFA enabled" -foregroundcolor green
+					write-host $Role - $Member.DisplayName $Member.UserPrincipalName "MFA enabled" -foregroundcolor green
 				}	
 				
 				Try{
@@ -96,7 +100,7 @@ Function Get-O365AdminMFAStatus{
 			}
 		}
 		
-		$AdminData | Export-Csv -NoTypeInformation $Log 
+		$AdminData | Export-Csv -NoTypeInformation $Log -Encoding UTF8
 		write-host ""
 		write-host "CSV Export Complete to $Log" -foregroundcolor yellow
 	}
