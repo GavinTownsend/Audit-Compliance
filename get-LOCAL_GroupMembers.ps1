@@ -39,7 +39,9 @@
 		1.0		Aug 2019	Gavin Townsend		Original Build
 		
 #>
-$Domain = $(get-addomain).dnsroot
+Try{$Domain = $(get-addomain).dnsroot}
+Catch{$Domain = ""}
+
 $Log = "C:\temp\Audit\$Domain Local Groups $(get-date -f yyyy-MM-dd).csv"
 
 
@@ -106,7 +108,7 @@ foreach ($Computer in $Computers.name) {
 	}
 }
 $GroupData = $GroupData | sort -Property "Server","Group","Member"
-$GroupData | Export-Csv $Log -notype
+$GroupData | Export-Csv $Log -notype -Encoding UTF8
 write-host ""
 write-host "CSV Export Complete to $Log"
 Write-Host "Bad AD Logins: $BadADLogins" -foregroundcolor yellow
