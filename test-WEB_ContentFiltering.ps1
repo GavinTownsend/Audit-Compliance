@@ -35,7 +35,9 @@
 		1.0		Aug 2019	Gavin Townsend		Original Build
 		
 #>
-$Domain = $(get-addomain).dnsroot
+Try{$Domain = $(get-addomain).dnsroot}
+Catch{$Domain = ""}
+
 $Log = "C:\temp\Audit\$Domain Web Content Filter $(get-date -f yyyy-MM-dd).txt"
 
 Function Write-Log {
