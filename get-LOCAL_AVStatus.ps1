@@ -38,7 +38,9 @@
 		1.0		Aug 2019	Gavin Townsend		Original Build
 		
 #>
-$Domain = $(get-addomain).dnsroot
+Try{$Domain = $(get-addomain).dnsroot}
+Catch{$Domain = ""}
+
 $Log = "C:\temp\Audit\$Domain Local AV Status $(get-date -f yyyy-MM-dd).csv"
 
 $Computers = Get-ADComputer -Filter {OperatingSystem -NOTLIKE "*server*" -AND Enabled -eq $TRUE} -Property Name 
@@ -124,7 +126,7 @@ ForEach ($Computer in $Computers){
 			New-Object -TypeName PSObject -Property $obj 
 		}
 
-		Get-AntiVirusProduct | select Computername,Antivirus,DefinitionStatus,RealTimeStatus | export-csv -append -path $Log -NTI
+		Get-AntiVirusProduct | select Computername,Antivirus,DefinitionStatus,RealTimeStatus | export-csv -append -path $Log -NTI -Encoding UTF8
 	}
 }
 
