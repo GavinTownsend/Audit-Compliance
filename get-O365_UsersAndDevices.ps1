@@ -38,21 +38,21 @@
 #>
 
 
-$Domain = $(get-addomain).dnsroot
+Try{$Domain = $(get-addomain).dnsroot}
+Catch{$Domain = ""}
+
 $UserLog = "C:\Temp\Audit\$Domain O365 User List $(get-date -f yyyy-MM-dd).csv"
 $PCLog = "C:\Temp\Audit\$Domain O365 Device List $(get-date -f yyyy-MM-dd).csv"
 
 $Users = get-msoluser -all | Select-Object IsLicensed,UserPrincipalName,@{Name="PrimaryEmailAddress";Expression={$_.ProxyAddresses | ?{$_ -cmatch '^SMTP\:.*'}}},FirstName,LastName,Office,Department,Title,@{Name='Created';Expression={$_.WhenCreated.ToString("yyyy\/MM\/dd")}} 
-$users | export-csv $UserLog -NoTypeInformation
+$users | export-csv $UserLog -NoTypeInformation -Encoding UTF8
 
 $uCount = $users.count
 Write-Host "User report complete for $uCount user objects in $Domain. Details exported to $UserLog"
 
 
 $Devices = Get-MsolDevice -All | Select Enabled,DisplayName,DeviceOsType,DeviceOsVersion,DeviceTrustType,DeviceTrustLevel,ApproximateLastLogonTimestamp
-$Devices | export-csv $PCLog -NoTypeInformation
+$Devices | export-csv $PCLog -NoTypeInformation -Encoding UTF8
 
 $cCount = $Devices.count
 Write-Host "Computer report complete for $cCount computer objetcs in $Domain. Details exported to $PCLog"
-
-
