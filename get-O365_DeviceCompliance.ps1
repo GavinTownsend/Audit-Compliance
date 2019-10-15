@@ -37,9 +37,11 @@
 #>
 
 
-$Domain = $(get-addomain).dnsroot
-$DeviceLog = "C:\Temp\Audit\$Domain O365 Device Compliance $(get-date -f yyyy-MM-dd).csv"
+Try{$Domain = $(get-addomain).dnsroot}
+Catch{$Domain = ""}
 
+$DeviceLog = "C:\Temp\Audit\$Domain O365 Device Compliance $(get-date -f yyyy-MM-dd).csv"
+$Result =@()
 
 [System.Collections.IDictionary]$script:schema = @{
     
@@ -65,34 +67,24 @@ function createResultObject
     return $resultObject
 }
 
-If ($users.Count -eq 0)
-{
-    $users = Get-MsolUser
-}
-
-[PSObject[]]$result = foreach ($u in $users)
-{
     
-    [PSObject]$devices = get-msoldevice -RegisteredOwnerUpn $u.UserPrincipalName
-    foreach ($d in $devices)
-    {
-        [PSObject]$deviceResult = createResultObject
-        $deviceResult.DeviceId = $d.DeviceId 
-        $deviceResult.DeviceOSType = $d.DeviceOSType 
-        $deviceResult.DeviceOSVersion = $d.DeviceOSVersion 
-        $deviceResult.DeviceTrustLevel = $d.DeviceTrustLevel
-        $deviceResult.DisplayName = $d.DisplayName
-        $deviceResult.IsCompliant = $d.GraphDeviceObject.IsCompliant
-        $deviceResult.IsManaged = $d.GraphDeviceObject.IsManaged
-        $deviceResult.DeviceObjectId = $d.ObjectId
-        $deviceResult.RegisteredOwnerUpn = $u.UserPrincipalName
-        $deviceResult.RegisteredOwnerObjectId = $u.ObjectId
-        $deviceResult.RegisteredOwnerDisplayName = $u.DisplayName
-        $deviceResult.ApproximateLastLogonTimestamp = $d.ApproximateLastLogonTimestamp
+[PSObject]$devices = get-msoldevice -all
+foreach ($d in $devices)
+{
+	[PSObject]$deviceResult = createResultObject
+	$deviceResult.DeviceId = $d.DeviceId 
+	$deviceResult.DeviceOSType = $d.DeviceOSType 
+	$deviceResult.DeviceOSVersion = $d.DeviceOSVersion 
+	$deviceResult.DeviceTrustLevel = $d.DeviceTrustLevel
+	$deviceResult.DisplayName = $d.DisplayName
+	$deviceResult.IsCompliant = $d.GraphDeviceObject.IsCompliant
+	$deviceResult.IsManaged = $d.GraphDeviceObject.IsManaged
+	$deviceResult.DeviceObjectId = $d.ObjectId
+	$deviceResult.RegisteredOwnerUpn = $d.RegisteredOwnerUpn
+	$deviceResult.RegisteredOwnerDisplayName = $d.RegisteredOwnerDisplayName
+	$deviceResult.ApproximateLastLogonTimestamp = $d.ApproximateLastLogonTimestamp
 
-        $deviceResult
-    }
-
+	$Result+=$deviceResult
 }
 
-$Result | Export-Csv -path $DeviceLog -NoTypeInformation
+$Result | Export-Csv -path $DeviceLog -NoTypeInformation -Encoding UTF8
