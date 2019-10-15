@@ -26,12 +26,14 @@
 		1.0		Aug 2019	Gavin Townsend		Original Build
 		
 #>
-$Domain = $(get-addomain).dnsroot
+Try{$Domain = $(get-addomain).dnsroot}
+Catch{$Domain = ""}
+
 $Log = "C:\temp\Audit\$Domain ActiveSync Devices $(get-date -f yyyy-MM-dd).csv"
 
 $AllDevices = Get-MobileDevice -result unlimited | Get-MobileDeviceStatistics
 $AllDeviceCount = $AllDevices.count
 Write-host "Mobile device count is $AllDeviceCount"
 
-$AllDevices | Export-Csv $Log -notype
+$AllDevices | Export-Csv $Log -notype -Encoding UTF8
 Write-Host "Export completed to $Log"
