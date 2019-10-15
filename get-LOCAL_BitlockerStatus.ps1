@@ -44,7 +44,9 @@
 #>
 
 
-$Domain = $(get-addomain).dnsroot
+Try{$Domain = $(get-addomain).dnsroot}
+Catch{$Domain = ""}
+
 $Log = "C:\temp\Audit\$Domain Bitlocker Status $(get-date -f yyyy-MM-dd).csv"
 
 $Computers = Get-ADComputer -Filter {OperatingSystem -NOTLIKE "*server*" -AND Enabled -eq $TRUE} -Property Name
@@ -125,7 +127,7 @@ foreach ($Computer in $Computers.name) {
 	}
 }
 
-$Data | sort-object -property Computer,Drive | Export-Csv $Log -notype
+$Data | sort-object -property Computer,Drive | Export-Csv $Log -notype -Encoding UTF8
 
 write-host ""
 write-host "There were $DriveCount drives listed from $ComputerCount computers"
