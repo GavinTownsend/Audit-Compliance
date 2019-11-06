@@ -1,3 +1,4 @@
+
 <#
 	.SYNOPSIS
 		Checks OS version to determine compliance for Microsoft Mainstream or Extended Support.
@@ -237,7 +238,7 @@ foreach ($Computer in $Computers){
 		$CountUnknown++
 	}
 	else{
-		$SupportDate = [datetime]::parseexact($Support, 'MMMM d yyyy', $null)
+		$SupportDate = [datetime]::parseexact($Support, 'MMMM d yyyy', [System.Globalization.DateTimeFormatInfo]::InvariantInfo,[System.Globalization.DateTimeStyles]::None)
 		$WarnDate = ($SupportDate).AddDays(-$WarnDays)
 	
 		if ($Now -le $WarnDate){
