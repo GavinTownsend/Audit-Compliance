@@ -122,6 +122,7 @@ foreach ($Device in $Devices){
 					$ExtendedSupport="April 9 2019"	
 				}	
 			}
+			
 			'10.0.17134*'{
 				$Build="1803" 
 				if ($Edition -eq "enterprise") {
@@ -188,7 +189,8 @@ foreach ($Device in $Devices){
 			$CountUnknown++
 		}
 		else{
-			$SupportDate = [datetime]::parseexact($Support, 'MMMM d yyyy', $null)
+			#$SupportDate = [datetime]::parseexact($Support, 'MMMM d yyyy', $null)
+			$SupportDate = [datetime]::parseexact($Support, 'MMMM d yyyy', [System.Globalization.DateTimeFormatInfo]::InvariantInfo,[System.Globalization.DateTimeStyles]::None)
 			$WarnDate = ($SupportDate).AddDays(-$WarnDays)
 		
 			if ($Now -le $WarnDate){
