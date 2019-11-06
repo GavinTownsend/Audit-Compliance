@@ -1,6 +1,6 @@
 <#
 	.SYNOPSIS
-		Checks OS version to determine compliance for Microsoft Mainstream or Extended Support.
+		Reports on a the Active Directory domain configuration.
 	
 	.NOTES
 		Script Name:	get-AD_Discovery.ps1
@@ -100,7 +100,7 @@ Write-Host ""
 Write-Host "" 
  
 # Tombstone lifetime 
-	$ts = (Get-ADObject -Identity “CN=Directory Service,CN=Windows NT,CN=Services,$(($rDSE).configurationNamingContext)” -Properties tombstoneLifetime).tombstoneLifetime 
+	$ts = (Get-ADObject -Identity "CN=Directory Service,CN=Windows NT,CN=Services,$(($rDSE).configurationNamingContext)" -Properties tombstoneLifetime).tombstoneLifetime 
 		Write-Host "Tombstone Lifetime:" $ts 
  
 Write-Host "" 
@@ -191,12 +191,19 @@ Write-Host ""
  
 # OUs with blocked inheritance 
 	Write-Host "List of OUs with Blocked Inheritance:" -ForegroundColor Green 
+	try{
 		Get-ADOrganizationalUnit -SearchBase $rDSE.defaultNamingContext -Filter * | Where-Object {(Get-GPInheritance $_.DistinguishedName).GpoInheritanceBlocked -eq "Yes"} | Sort-Object Name | ft Name,DistinguishedName -AutoSize -Wrap 
- 
+	}
+	Catch{
+		Write-Host "WARNING: GPO cmdlets unavailable (module not loaded or user may not have permission" -foregroundcolor yellow
+	}
+	
 Write-Host "" 
  
 # Unlinked GPOs 
 	Write-Host "List of GPOs currently not linked:" -ForegroundColor Green 
+	
+	try{
 		Get-GPO -All |	
 			foreach{  
 			   If ($_ | Get-GPOReport -ReportType XML | Select-String -NotMatch "<LinksTo>") 
@@ -204,7 +211,11 @@ Write-Host ""
 				   Write-Host $_.DisplayName 
 				} 
 			} 
- 
+	}
+	Catch{
+		Write-Host "WARNING: GPO cmdlets unavailable (module not loaded or user may not have permission" -foregroundcolor yellow
+	}
+
 Write-Host "" 
  
 # Duplicate SPNs 
