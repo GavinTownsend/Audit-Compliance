@@ -9,7 +9,7 @@
 #>
 
 $DSE = [ADSI]"LDAP://Rootdse"
-$Entries = ([ADSI]("LDAP://" + $DSE.defaultNamingContext),[ADSI]("LDAP://" + $DSE.configurationNamingContext))
+$Entries = [ADSI]("LDAP://" + $DSE.defaultNamingContext),[ADSI]("LDAP://" + $DSE.configurationNamingContext)
 $Rights = ([ADSI]("LDAP://CN=Extended-Rights," + $DSE.ConfigurationNamingContext)).psbase.Children
 
 foreach($Entry in $Entries){
