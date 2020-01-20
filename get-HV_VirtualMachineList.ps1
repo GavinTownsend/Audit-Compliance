@@ -5,7 +5,7 @@
 	.NOTES
 		Script Name:	get-HV_VirtualMachineList.ps1
 		Created By: 	Gavin Townsend
-		Date: 			August 2019
+		Date: 		August 2019
 		
 	.DESCRIPTION
 		The script performs the follow actions:
