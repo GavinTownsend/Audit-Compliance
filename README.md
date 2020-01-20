@@ -39,5 +39,11 @@
  * get-AD_UsersAndComputers.ps1
       Exports a basic list of Computer and User Objects
       
+ * get-VM_VirtualMachineList.ps1
+      Exports a basic list of VM machines (for VMware)
+      
+ * get-HV_VirtualMachineList.ps1
+      Exports a basic list of VM machines (for Hyper-V)
+      
  * test-WEB_ContentFiltering.ps1
       Checks web content filtering by downloading EICAR test file and testing accessibility to known bad sites
