@@ -1,6 +1,7 @@
 # Audit-Compliance
 
  * Get-AD_OSCompliance.ps1 & Get-O365_OSCompliance.ps1
+ 
       Checks OS version to determine compliance for Microsoft Mainstream or Extended Support.
      
  * Test-ADPasswords.ps1 
