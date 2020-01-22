@@ -83,7 +83,7 @@ $URLs =@("http:\\evildooinz.com",
 	"http:\\proxybay.pro",
 	"http:\\yadro.ru",
 	"http:\\warez.com",
-	"http:\\torrentday.com",
+	"http:\\torrentspy.com",
 	"http:\\cheats.ru")
 
 foreach ($URL in $URLs){
