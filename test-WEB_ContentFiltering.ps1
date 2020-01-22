@@ -33,6 +33,7 @@
 		
 	.VERSION HISTORY
 		1.0		Aug 2019	Gavin Townsend		Original Build
+		1.1		Jan 2020	Gavin Townsend		Upated to WGET method
 		
 #>
 Try{$Domain = $(get-addomain).dnsroot}
@@ -82,15 +83,19 @@ $URLs =@("http:\\evildooinz.com",
 	"http:\\proxybay.pro",
 	"http:\\yadro.ru",
 	"http:\\warez.com",
-	"http:\\torrentz.eu",
+	"http:\\torrentday.com",
 	"http:\\cheats.ru")
 
 foreach ($URL in $URLs){
-	
+	$HTTP_Status = $NULL
 	Try{
+		<#  Legacy PS - not as accurate
 		$HTTP_Request = [System.Net.WebRequest]::Create($URL)
 		$HTTP_Response = $HTTP_Request.GetResponse()
 		$HTTP_Status = [int]$HTTP_Response.StatusCode
+		#>
+		
+		$HTTP_Status = wget $URL | % {$_.StatusCode}
 		
 		If ($HTTP_Status -eq 200) {
 			Write-Host "WARNING: $URL is accessible" -foregroundcolor yellow
