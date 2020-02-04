@@ -34,6 +34,7 @@
 	.INFO	
 		Server 2008 https://support.microsoft.com/en-au/help/4456235/end-of-support-for-windows-server-2008-and-windows-server-2008-r2
 		Windows 10	https://support.microsoft.com/en-au/help/13853/windows-lifecycle-fact-sheet
+		Win10 LTSB 	https://docs.microsoft.com/en-us/windows/release-information/
 		General		https://support.microsoft.com/en-au/lifecycle/search
 
 #>
@@ -140,7 +141,11 @@ foreach ($Computer in $Computers){
 				}
 				'10.0 (14393)'{
 					$Build="1607"
-					if ($Computer.OperatingSystem -like "*Enterprise*") {
+					if ($Computer.OperatingSystem -like "*LTSB*") {
+						$MainstreamSupport="October 10 2021"		
+						$ExtendedSupport="October 13 2026"
+					}
+					elseif ($Computer.OperatingSystem -like "*Enterprise*") {
 						$MainstreamSupport="April 9 2019"		
 						$ExtendedSupport="April 9 2019"
 					}
@@ -185,7 +190,11 @@ foreach ($Computer in $Computers){
 				}
 				'10.0 (17763)'{
 					$Build="1809"
-					if ($Computer.OperatingSystem -like "*Enterprise*") {
+					if ($Computer.OperatingSystem -like "*LTSC*") {
+						$MainstreamSupport="January 9 2024"		
+						$ExtendedSupport="January 9 2029"
+					}
+					elseif ($Computer.OperatingSystem -like "*Enterprise*") {
 						$MainstreamSupport="May 11 2021"		
 						$ExtendedSupport="May 11 2021"	
 					}
