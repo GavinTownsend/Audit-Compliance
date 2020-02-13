@@ -9,15 +9,12 @@
 		
 	.DESCRIPTION
 		The script performs the follow actions:
-			- Promtps for domain and record type to search for
-			- Internal DNS resolution
-			- Public DNS resolution
+			- Public DNS resolution of SOA and MX records
 		
 	.EXAMPLE
 			.\get-DNS_Record.ps1
 			
 	.REQUIREMENTS
-		Resolve DNS-Name needs Powershell v4 (Windows 8.1/2012R2) or later
 		
 		Public resolution alternative  https://mxtoolbox.com/
 		
@@ -30,19 +27,76 @@
 			
 	.VERSION HISTORY
 		1.0		Aug 2019	Gavin Townsend		Original Build
+		2.0		Feb 2020	Gavin Townsend		Updated to public resolution and built in checks
 		
 #>
 
-
 $Domain = Read-Host 'Enter public domain name'
-$Type = Read-Host 'Enter Record Type (eg A, SOA, MX)'
-$Log = "C:\Temp\Audit\$Domain DNS $Type $(get-date -f yyyy-MM-dd).txt"
+$Type = @('SOA','MX')
+$Log = "C:\Temp\Audit\$Domain DNS Scan $(get-date -f yyyy-MM-dd).txt"
 
-Write-host "Attempting internal DNS resolution"
-Resolve-DnsName $Domain -type $Type >> $Log
+Function Get-PublicDnsRecord{
+    Param(
+        [Parameter(Mandatory=$true,Position=1)]
+        [String]$DomainName,
 
-Write-host "Attempting public DNS resolution"
-Resolve-DnsName $Domain -type $Type -server 8.8.8.8 >> $Log
+        [Parameter(Mandatory=$true,Position=2)]
+        [ValidateSet('A','AAAA','CERT','CNAME','DHCIP','DLV','DNAME','DNSKEY','DS','HINFO','HIP','IPSECKEY','KX','LOC','MX','NAPTR','NS','NSEC','NSEC3','NSEC3PARAM','OPT','PTR','RRSIG','SOA','SPF','SRV','SSHFP','TA','TALINK','TLSA','TXT')]
+        [String[]]$DnsRecordType
+    )
+    Begin{}
+    Process{
+        ForEach($Record in $DnsRecordType){
+            Try{
+                $WebUrl = 'http://www.dns-lg.com/opendns1/{0}/{1}' -f $DomainName,$Record
+                
+                $WebData = Invoke-WebRequest $WebUrl -ErrorAction Stop | Select-Object -ExpandProperty Content | ConvertFrom-Json | Select-Object -ExpandProperty answer
+                $WebData | % {
+                     New-Object -TypeName PSObject -Property @{
+                        'Name'      = $_.name
+                        'Type'      = $_.type
+                        'Target'    = $_.rdata
+                    }
+                }
+            }
+            catch{
+                Write-Warning -Message $_
+                New-Object -TypeName PSObject -Property @{
+                    'Name'      = $DomainName
+                    'Type'      = $Record
+                    'Target'    = ($_[0].ErrorDetails.Message -split '"')[-2]
+                }
+            }
+        }
+    }
+    End{}
+}
 
+#Lookup and Log
+$Record = Get-PublicDnsRecord -DomainName $Domain -DnsRecordType $Type
+$Record | Out-File $Log
+
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host "Script Output Summary - DNS Scan for $Domain $(Get-Date)"
+write-Host ""
+
+if ($Record -like '*cscdns.net*') {
+	write-host "DNS Provider is CSC" -foregroundcolor green
+}
+Else{
+	write-host "DNS Provider is not CSC" -foregroundcolor yellow
+}
+
+if ($Record -like '*mimecast*') {
+	write-host "Mail Provider is Mimecast" -foregroundcolor green
+}
+Else{
+	write-host "DNS Provider is not Mimecast" -foregroundcolor yellow
+}
+write-Host ""
+write-Host "---------------------------------------------------"
 write-host ""
-write-host "Log Export Complete to $Log" -foregroundcolor yellow
+write-host "DNS scanning tests concluded. Please review $Log" 
+write-host ""
+$Record
