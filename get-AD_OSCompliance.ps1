@@ -281,6 +281,10 @@ foreach ($Computer in $Computers){
 }
 
 #Count
+write-Host ""
+write-Host "--------------------------------------------------------"
+write-Host "Script Output Summary - OS Compliance $(Get-Date)"
+write-Host ""
 Write-Host "There are $CountServers servers and $CountComputers computers in the $Domain domain."
 write-host ""
 write-host "Compliant: $CountYes" -foregroundcolor green
@@ -288,6 +292,7 @@ write-host "Warning: $CountWarn" -foregroundcolor yellow
 write-host "Non-Compliant: $CountNo" -foregroundcolor red
 write-host "Unknown or TBA: $CountUnknown"
 write-host ""
+write-Host "--------------------------------------------------------"
 
 
 #Export
