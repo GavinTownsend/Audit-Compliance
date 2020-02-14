@@ -5,7 +5,7 @@
 	.NOTES
 		Script Name:	get-HV_VirtualMachineList.ps1
 		Created By: 	Gavin Townsend
-		Date: 		August 2019
+		Date: 			August 2019
 		
 	.DESCRIPTION
 		The script performs the follow actions:
@@ -31,6 +31,8 @@ $HyperVServer = Read-Host "Specify the Hyper-V Server to use (enter '.' for the 
 $Log = "C:\Temp\Audit\$HyperVServer Server VM List $(get-date -f yyyy-MM-dd).txt"
 
 $VMs = gwmi -namespace root\virtualization Msvm_ComputerSystem -computername $HyperVServer -filter "Caption = 'Virtual Machine'"
+$OnlineCount = 0
+$OfflineCount = 0
 $table = @{}
 
 foreach ($VM in [array] $VMs) {
@@ -42,9 +44,11 @@ foreach ($VM in [array] $VMs) {
 
 	if ($entry.Value){
 		$value = $entry.Value
+		$OnlineCount++
 	}
 	elseif ($VM.EnabledState -ne 2){
 		$value = "Offline"
+		$OfflineCount++
 	}
 	else {
 		$value = "Unknown"
@@ -61,4 +65,15 @@ foreach ($VM in [array] $VMs) {
 $table.GetEnumerator() | Sort-Object Name | Format-Table -Autosize
 
 $VMs | Export-Csv $Log -notype
-write-host "Log Export Complete to $Log" -foregroundcolor yellow
+
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host "Script Output Summary - Hyper-V Virtual Machines $(Get-Date)"
+write-Host ""
+write-Host "Online count: $OnlineCount"
+write-Host "Offline count: $OfflineCount"
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host ""
+Write-Host "Hyper-V scanning tests concluded. Please review log $Log"
+
