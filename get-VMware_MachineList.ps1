@@ -34,5 +34,12 @@ $VMs = Get-VM  | Select-Object Name, Vmhost, PowerState, @{N="ToolsStaus"; E={$_
 $VMs | Export-Csv $Log -notype
 $VMCount = $VMs.count
 
-Write-host "VM Count = $VMCount"
-write-host "Log Export Complete to $Log" -foregroundcolor yellow
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host "Script Output Summary - VMware Virtual Machines $(Get-Date)"
+write-Host ""
+write-Host "VM count: $VMCount"
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host ""
+Write-Host "VMware scanning tests concluded. Please review log $Log"
