@@ -37,15 +37,21 @@ $PCLog = "C:\Temp\Audit\$Domain Computer List $(get-date -f yyyy-MM-dd).csv"
 
 $Users = Get-ADUser -Filter * -Properties * | Select-Object enabled,samaccountname,distinguishedName,mail,givenName,sn,@{label="Manager";expression={(Get-ADUser $_.Manager -Properties DisplayName).DisplayName}},physicalDeliveryOfficeName,Company,Department,Title,@{Name='Created';Expression={$_.Created.ToString("yyyy\/MM\/dd")}} 
 $users | export-csv $UserLog -NoTypeInformation -Encoding UTF8
-
 $uCount = $users.count
-Write-Host "User report complete for $uCount user objects in $Domain. Details exported to $UserLog"
-
 
 $Computers = Get-ADComputer -Filter * -Property * | Select-Object enabled,Name,Description,managedBy,OperatingSystem,OperatingSystemServicePack,OperatingSystemVersion,distinguishedName,whenCreated,LastLogonDate 
 $Computers | export-csv $PCLog -NoTypeInformation -Encoding UTF8
-
 $cCount = $Computers.count
-Write-Host "Computer report complete for $cCount computer objetcs in $Domain. Details exported to $PCLog"
 
 
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host "Script Output Summary - Users and Computers $(Get-Date)"
+write-Host ""
+write-Host "User objects in $Domain : $uCount" 
+write-Host "Computer objetcs in $Domain : $cCount"
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host ""
+Write-Host "User report completed. Details exported to $UserLog"
+Write-Host "Computer report completed. Details exported to $PCLog"
