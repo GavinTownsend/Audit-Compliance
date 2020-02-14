@@ -298,4 +298,4 @@ write-Host "--------------------------------------------------------"
 #Export
 $OutData = $OutData | sort -Property "Type","Name"
 $OutData | Export-CSV $Log -notype -Encoding UTF8
-write-host "Log Export Complete to $Log" -foregroundcolor yellow
+write-host "Log Export Complete to $Log"
