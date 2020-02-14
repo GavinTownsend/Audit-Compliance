@@ -33,7 +33,16 @@ $Log = "C:\temp\Audit\$Domain ActiveSync Devices $(get-date -f yyyy-MM-dd).csv"
 
 $AllDevices = Get-MobileDevice -result unlimited | Get-MobileDeviceStatistics
 $AllDeviceCount = $AllDevices.count
-Write-host "Mobile device count is $AllDeviceCount"
-
 $AllDevices | Export-Csv $Log -notype -Encoding UTF8
-Write-Host "Export completed to $Log"
+
+
+
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host "Script Output Summary - ActiveSync Devices $(Get-Date)"
+write-Host ""
+write-Host "Mobile device count is $AllDeviceCount"
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host ""
+Write-Host "ActiveSync scanning tests concluded. Please review $Log"
