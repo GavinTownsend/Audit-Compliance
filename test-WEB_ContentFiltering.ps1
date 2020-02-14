@@ -52,25 +52,31 @@ write-log "$(Get-Date) - START: New Script run from $Env:Computername"
 $HTTP = "http://2016.eicar.org/download/eicar.com"
 $HTTPS = "https://secure.eicar.org/eicar.com"
 $TestFile = "c:\temp\audit\eicar.com"
+$VirusWrite = 0
+$VirusBlock = 0
 
 Try{
 	Invoke-WebRequest -Uri $HTTP -OutFile $TestFile
 		Write-Host "WARNING: HTTP File writen to $TestFile" -foregroundcolor yellow
 		Write-LOG "`t WARNING: HTTP File writen to $TestFile" 
+		$VirusWrite++
 }
 catch{
 	write-Host "SUCESS: HTTP File blocked when writing to $TestFile" -foregroundcolor green
 	Write-LOG "`t SUCCESS: HTTP File blocked when writen to $TestFile" 
+	$VirusBlock++
 }
 
 Try{
 	Invoke-WebRequest -Uri $HTTPS -OutFile $TestFile
 		Write-Host "WARNING: HTTPS File writen to $TestFile" -foregroundcolor yellow
 		Write-LOG "`t WARNING: HTTPS File writen to $TestFile" 
+		$VirusWrite++
 }
 catch{
 	write-Host "SUCESS: HTTPS File blocked when writing to $TestFile" -foregroundcolor green
 	Write-LOG "`t SUCCESS: HTTPS File blocked when writen to $TestFile" 
+	$VirusBlock++
 }
 
 
@@ -84,7 +90,39 @@ $URLs =@("http:\\evildooinz.com",
 	"http:\\yadro.ru",
 	"http:\\warez.com",
 	"http:\\torrentspy.com",
-	"http:\\cheats.ru")
+	"http:\\cheats.ru",
+	"http:\\candoinet.com.br",
+	"http:\\bc0.cn",
+	"http:\\newasp.com.cn",
+	"http:\\hackings.cn",
+	"http:\\123xxl.com",
+	"http:\\7sir7.com",
+	"ahttp:\\bu-passwords.com",
+	"ahttp:\\bx4.com",
+	"http:\\adultcomicworld.com",
+	"http:\\adultfreegals.com",
+	"http:\\adult-password.com",
+	"http:\\adultpasswordcracks.com",
+	"http:\\adultunderground.com",
+	"http:\\allowstood.com",
+	"http:\\allpasswords.com",
+	"http:\\myproxy.ca",
+	"http:\\myspace-proxy.ca",
+	"http:\\proxylist.ca",
+	"http:\\proxyz.ca",
+	"http:\\pxy.ca",
+	"http:\\webproxy.ca",
+	"http:\\bypass.cc",
+	"http:\\royalbank.com.elpeetha.com.au",
+	"http:\\enpointe.com.au",
+	"http:\\equilibria.com.au",
+	"http:\\erskineheath.com.au",
+	"http:\\etchartisan.com.au",
+	"http:\\eternalbeautyballarat.com.au",
+	"http:\\freexxxsex.com")
+
+$OpenCount = 0
+$BlockCount = 0
 
 foreach ($URL in $URLs){
 	$HTTP_Status = $NULL
@@ -100,17 +138,31 @@ foreach ($URL in $URLs){
 		If ($HTTP_Status -eq 200) {
 			Write-Host "WARNING: $URL is accessible" -foregroundcolor yellow
 			Write-LOG "`t WARNING: $URL is accessible" 
+			$OpenCount++
 		}
 		Else {
 			Write-Host "SUCCESS: $URL is not accessible" -foregroundcolor green
 			Write-LOG "`t SUCCESS: $URL is accessible" 
+			$BlockCount++
 		}
 	}
 	catch{
 			Write-Host "SUCCESS: $URL is not available" -foregroundcolor green
 			Write-LOG "`t SUCCESS: $URL is not available" 
+			$BlockCount++
 	}
 }
 
+write-Host ""
+write-Host "--------------------------------------------------------------"
+write-Host "Script Output Summary - Content Filtering $(Get-Date) "
+write-Host ""
+write-Host "Test virus files downloaded to disk: $VirusWrite" -foregroundcolor yellow
+write-Host "Test virus files blocked: $VirusBlock" -foregroundcolor green
+write-Host ""
+write-Host "Suspicious sites openly available: $OpenCount" -foregroundcolor yellow
+write-Host "Suspicious sites failed to connect: $BlockCount" -foregroundcolor green
+write-Host ""
+write-Host "--------------------------------------------------------------"
 write-Host ""
 Write-Host "Content Filter tests concluded. Please review $Log and your AV software logs."
