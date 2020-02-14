@@ -28,6 +28,8 @@
 	.REQUIREMENTS
 		O365 PowerShell plugins https://docs.microsoft.com/en-us/office365/enterprise/powershell/connect-to-office-365-powershell
 		
+			Install-Module MSOnline
+		
 		#Connect as a Non MFA enabled user
 			$AdminCred = Get-Credential admin@example.com
 			Connect-MsolService -Credential $AdminCred
@@ -227,6 +229,11 @@ foreach ($Device in $Devices){
 }
 
 #Count
+
+write-Host ""
+write-Host "--------------------------------------------------------"
+write-Host "Script Output Summary - O365 OS Compliance $(Get-Date)"
+write-Host ""
 Write-Host "There are $CountComputers computers in the $Domain domain."
 write-host ""
 write-host "Compliant: $CountYes" -foregroundcolor green
@@ -234,6 +241,7 @@ write-host "Warning: $CountWarn" -foregroundcolor yellow
 write-host "Non-Compliant: $CountNo" -foregroundcolor red
 write-host "Unknown or TBA: $CountUnknown"
 write-host ""
+write-Host "--------------------------------------------------------"
 
 
 #Export
