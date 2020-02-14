@@ -31,6 +31,8 @@
 	.REQUIREMENTS
 		O365 PowerShell plugins https://docs.microsoft.com/en-us/office365/enterprise/powershell/connect-to-office-365-powershell
 		
+			Install-Module MSOnline
+		
 		NB. Only returns values where O365 is the Identity Provider (IDp). Does not return values for 3rd parties (eg ADFS, Okta etc)
 		
 		Global administrator role
@@ -54,6 +56,10 @@ Function Get-O365AdminMFAStatus{
 	$objRole=@()
 	Try{$Domain = $(get-addomain).dnsroot}
 	Catch{$Domain = ""}
+	
+	$MemberCount = 0
+	$EnabledCount = 0
+	$NotCount = 0
 
 	$Log = "C:\temp\Audit\$Domain O365 Admin MFA Status $(get-date -f yyyy-MM-dd).csv"
 	
@@ -64,14 +70,18 @@ Function Get-O365AdminMFAStatus{
 		foreach ($Role in $Roles){
 			$Members = Get-MsolRoleMember -RoleObjectId (Get-MsolRole -RoleName $Role).ObjectId 
 			foreach ($Member in $Members){
+			
+				$MemberCount++
 				$MsUser = $Member | Get-MsolUser
 				if($MsUser.StrongAuthenticationMethods.Count -eq 0) {
 					$Enabled = "False"
 					write-host $Role - $Member.DisplayName $Member.UserPrincipalName "No MFA enabled" -foregroundcolor red
+					$NotCount++
 				}
 				Else{
 					$Enabled = "True"
 					write-host $Role - $Member.DisplayName $Member.UserPrincipalName "MFA enabled" -foregroundcolor green
+					$EnabledCount++
 				}	
 				
 				Try{
@@ -101,8 +111,21 @@ Function Get-O365AdminMFAStatus{
 		}
 		
 		$AdminData | Export-Csv -NoTypeInformation $Log -Encoding UTF8
+				
+		write-Host ""
+		write-Host "--------------------------------------------------------"
+		write-Host "Script Output Summary - O365 Admin MFA Compliance $(Get-Date)"
+		write-Host ""
+		Write-Host "There are $MemberCount O365 Administrators in the $Domain domain."
 		write-host ""
-		write-host "CSV Export Complete to $Log" -foregroundcolor yellow
+		write-host "MFA Enabled Count: $EnabledCount" -foregroundcolor green
+		write-host "MFA NOT Enabled Count: $NotCount" -foregroundcolor red
+		write-host ""
+		write-Host "--------------------------------------------------------"
+		
+		write-host "MFA Scan Complete. CSV Export Complete to $Log"
+		
+		
 	}
 	Catch{
 		Write-host "There was an error: $($_.Exception.Message)"
