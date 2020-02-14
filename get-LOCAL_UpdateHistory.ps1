@@ -23,6 +23,19 @@
 		
 		NB. Some WMI scans do not work on all operating systems (particularly older ones)
 		
+		
+		O365 PowerShell plugins https://docs.microsoft.com/en-us/office365/enterprise/powershell/connect-to-office-365-powershell
+		
+			Install-Module MSOnline
+		
+		#Connect as a Non MFA enabled user
+			$AdminCred = Get-Credential admin@example.com
+			Connect-MsolService -Credential $AdminCred
+
+		#Connect as an MFA enabled user (login GUI)
+			Connect-MsolService
+			
+		
 	.AUDIT CRITERIA
 		Complete a discovery scan of windows update history
 		
@@ -41,9 +54,18 @@ Catch{$Domain = ""}
 
 $Log = "C:\temp\Audit\$Domain Update History $(get-date -f yyyy-MM-dd).csv"
 
-$Computers = Get-ADComputer -Filter {OperatingSystem -LIKE "*server*" -AND Enabled -eq $TRUE} -Property Name  
-#$Computers = Get-ADComputer -Filter {OperatingSystem -NOTLIKE "*server*" -AND Enabled -eq $TRUE} -Property Name
-$Computers = Get-Random -InputObject $Computers -Count 100
+try{
+    $Recent = (Get-Date).AddDays(-1)
+    $Computers = Get-ADComputer -Filter {OperatingSystem -NOTLIKE "*server*" -AND Enabled -eq $TRUE -AND lastlogondate -gt $Recent } -Property Name
+    $Auth= "AD"
+}
+Catch{
+    $Computers = Get-MsolDevice -All |? {$_.Enabled -eq $True -and $_.DeviceOsType -eq "Windows"} | Select DisplayName
+    $Auth="Azure"
+}
+
+$MachinesToScanCount = 50
+$Computers = Get-Random -InputObject $Computers -Count $MachinesToScanCount
 
 $obj=@()
 $Data = @()
@@ -54,7 +76,14 @@ $OldCount = 0
 $VeryOld = (get-date).AddDays(-30)
 $VeryOldCount = 0
 
-foreach ($Computer in $Computers.name) {
+foreach ($Computer in $Computers) {
+    if ($Auth -eq "AD"){
+        $Computer = $Computer.name
+    }
+    else{
+       $Computer = $Computer.DisplayName
+    }
+
 
 	if(!(Test-Connection -Cn $Computer -BufferSize 16 -Count 1 -ea 0 -quiet)){
 		write-host "WARNING: $Computer not accessible" -f yellow
@@ -66,6 +95,21 @@ foreach ($Computer in $Computers.name) {
 			$Session = [activator]::CreateInstance([type]::GetTypeFromProgID("Microsoft.Update.Session",$Computer))
 			$Searcher= $Session.CreateUpdateSearcher()
 			$History = $Searcher.QueryHistory(0, $Events)
+
+			<#  Event Log Alternative (NB. logs may be cleared, so not alway accurate)
+			
+			$History = Get-WinEvent -ComputerName $Computer -MaxEvents $Events @{
+				Logname='System'
+				ID=19
+				ProviderName='Microsoft-Windows-WindowsUpdateClient'
+			} | ForEach-Object  {
+				[PSCustomObject]@{
+					Date = $_.TimeCreated
+					Title = $_.Properties.Value[0]
+				}
+			}
+			
+			#>
 
 			$ComputerCount++
 			
@@ -100,10 +144,15 @@ foreach ($Computer in $Computers.name) {
 
 $Data | sort-object -property Computer,Date -descending | Export-Csv $Log -notype -Encoding UTF8
 
+write-Host ""
+write-Host "--------------------------------------------------------"
+write-Host "Script Output Summary - Local Update History Scan $(Get-Date)"
+write-Host ""
+Write-Host "There were $EventCount Windows Update events listed from $ComputerCount computers"
 write-host ""
-write-host "There were $EventCount Windows Update events listed from $ComputerCount computers"
-write-host "$RecentCount events are recent"
-write-host "$OldCount events are old" -foregroundcolor yellow
-write-host "$VeryOldCount events are very old" -foregroundcolor red
+write-host "Recent Events: $RecentCount" -foregroundcolor green
+write-host "Old Events: $OldCount" -foregroundcolor yellow
+write-host "Very Old Events: $VeryOldCount" -foregroundcolor red
 write-host ""
-write-host "Log Export Complete to $Log" 
+write-Host "--------------------------------------------------------"
+write-host "Local update history scan complete. Log Export Complete to $Log"
