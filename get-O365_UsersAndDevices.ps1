@@ -18,6 +18,8 @@
 	.REQUIREMENTS
 		O365 PowerShell plugins https://docs.microsoft.com/en-us/office365/enterprise/powershell/connect-to-office-365-powershell
 		
+			Install-Module MSOnline
+		
 		#Connect as a Non MFA enabled user
 			$AdminCred = Get-Credential admin@example.com
 			Connect-MsolService -Credential $AdminCred
@@ -45,14 +47,22 @@ $UserLog = "C:\Temp\Audit\$Domain O365 User List $(get-date -f yyyy-MM-dd).csv"
 $PCLog = "C:\Temp\Audit\$Domain O365 Device List $(get-date -f yyyy-MM-dd).csv"
 
 $Users = get-msoluser -all | Select-Object IsLicensed,UserPrincipalName,@{Name="PrimaryEmailAddress";Expression={$_.ProxyAddresses | ?{$_ -cmatch '^SMTP\:.*'}}},FirstName,LastName,Office,Department,Title,@{Name='Created';Expression={$_.WhenCreated.ToString("yyyy\/MM\/dd")}} 
+$uCount = $users.count
 $users | export-csv $UserLog -NoTypeInformation -Encoding UTF8
 
-$uCount = $users.count
-Write-Host "User report complete for $uCount user objects in $Domain. Details exported to $UserLog"
-
-
 $Devices = Get-MsolDevice -All | Select Enabled,DisplayName,DeviceOsType,DeviceOsVersion,DeviceTrustType,DeviceTrustLevel,ApproximateLastLogonTimestamp
+$dCount = $Devices.count
 $Devices | export-csv $PCLog -NoTypeInformation -Encoding UTF8
 
-$cCount = $Devices.count
-Write-Host "Computer report complete for $cCount computer objetcs in $Domain. Details exported to $PCLog"
+
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host "Script Output Summary - O365 Users and Devices $(Get-Date)"
+write-Host ""
+write-Host "User count: $uCount"
+write-Host "Device count: $dCount"
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host ""
+Write-Host "User scanning tests concluded. Please review log $UserLog"
+Write-Host "Device scanning tests concluded. Please review log $PCLog"
