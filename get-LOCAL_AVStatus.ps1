@@ -53,11 +53,11 @@
 #>
 Try{$Domain = $(get-addomain).dnsroot}
 Catch{$Domain = ""}
-
 $Log = "C:\temp\Audit\$Domain Local AV Status $(get-date -f yyyy-MM-dd).csv"
 
 try{
-    $Computers = Get-ADComputer -Filter {OperatingSystem -NOTLIKE "*server*" -AND Enabled -eq $TRUE} -Property Name 
+	$Recent = (Get-Date).AddDays(-1)
+	$Computers = Get-ADComputer -Filter {OperatingSystem -NOTLIKE "*server*" -AND Enabled -eq $TRUE -AND lastlogondate -gt $Recent } -Property Name 
     $Auth= "AD"
 }
 Catch{
@@ -65,7 +65,12 @@ Catch{
     $Auth="Azure"
 }
 
-$Computers = Get-Random -InputObject $Computers -Count 100
+$MachinesToScanCount = 100
+$OnlineCount = 0
+
+$Computers = Get-Random -InputObject $Computers -Count $MachinesToScanCount
+$AV1Alert = $FALSE
+$AV2Alert = $FALSE
 
 ForEach ($Computer in $Computers){
 	if ($Auth -eq "AD"){
@@ -79,12 +84,15 @@ ForEach ($Computer in $Computers){
 		write-host "WARNING: $Computer not accessible" -f yellow
 	}
 	else {
+		$OnlineCount++
+	
 		function Get-AntiVirusProduct {
 			[CmdletBinding()]
 			param (
 			[parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true)]
 			[Alias('name')]
 			$computername=$computer)
+			
 
 			try { 
 				#Get First AV product
@@ -96,11 +104,12 @@ ForEach ($Computer in $Computers){
 				# Get Status from Hex
     			$hex = [convert]::ToString($Status, 16).PadLeft(6,'0')
                 $WSC_SECURITY_PRODUCT_STATE = $hex.Substring(2,2)
-                $WSC_SECURITY_SIGNATURE_STATUS = $hex.Substring(4,2)		
+                $WSC_SECURITY_SIGNATURE_STATUS = $hex.Substring(4,2)	
 			} 
 			catch{ 
 				Write-Warning "[ERROR $($computername)] : $_" 
 				$NoAV+=$computername 
+				$AV1Alert = $TRUE
 			} 
 			
 			$NoAV | out-file -Encoding Ascii -append "C:\Temp\Audit\$Domain No AV Data.txt"
@@ -131,6 +140,7 @@ ForEach ($Computer in $Computers){
 			$obj.'RealTimeStatus' = $RealTimeProtectionStatus
 						
 			New-Object -TypeName PSObject -Property $obj 
+			
 		}
 		
 		function Get-AntiVirusProduct2 {
@@ -150,11 +160,13 @@ ForEach ($Computer in $Computers){
 				# Get Status from Hex
     			$hex2 = [convert]::ToString($Status2, 16).PadLeft(6,'0')
                 $WSC_SECURITY_PRODUCT_STATE2 = $hex2.Substring(2,2)
-                $WSC_SECURITY_SIGNATURE_STATUS2 = $hex2.Substring(4,2)		
+                $WSC_SECURITY_SIGNATURE_STATUS2 = $hex2.Substring(4,2)	
+
 			} 
 			catch{ 
 				Write-Warning "[ERROR $($computername)] : $_" 
 				$NoAV2+=$computername 
+				$AV2Alert = $TRUE
 			} 
 			
 			$NoAV2 | out-file -Encoding Ascii -append "C:\Temp\Audit\$Domain No AV2 Data.txt"
@@ -192,5 +204,40 @@ ForEach ($Computer in $Computers){
 	}
 }
 
-write-host ""
-write-host "CSV Export Complete to $Log"
+Try{$AVRatio = $OnlineCount/$MachinesToScanCount}
+Catch{$AVRatio = "Unable to calculate"}
+
+
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host "Script Output Summary - Local Antivirus $(Get-Date)"
+write-Host ""
+write-Host "Total Machines to Check: $MachinesToScanCount"
+write-Host "Machines Online Count: $OnlineCount"
+if ($AVRatio -gt 0.5) {
+	write-host "Good sample of machines tested" -foregroundcolor green
+}
+else{
+	write-host "Poor sample of machines tested." -foregroundcolor yellow
+	write-host "Please ensure WinRM is enabled and you have local admin access to target endpoints." -foregroundcolor yellow
+}
+write-Host ""
+if ($AV1Alert -eq $TRUE) {
+	write-host "First Antivirus check threw errors" -foregroundcolor Red
+	write-host "Please check C:\Temp\Audit\$Domain No AV Data.txt"
+}
+Else{
+	write-host "First Antivirus scan complete" -foregroundcolor
+}
+write-Host ""
+if ($AV2Alert -eq $TRUE) {
+	write-host "Second Antivirus check threw errors" -foregroundcolor yellow
+	write-host "Please check C:\Temp\Audit\$Domain No AV Data.txt"
+}
+Else{
+	write-host "Scan for a second antivirus complete" -foregroundcolor Green
+}
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host ""
+Write-Host "All antivirus scanning tests concluded. Please review $Log"
