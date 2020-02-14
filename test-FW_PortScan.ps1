@@ -55,14 +55,19 @@ $OutboundTarget = "allports.exposed"
 write-Host "Starting outbound port scanning to $OutboundTarget"
 write-log "`t Starting outbound port scanning to $OutboundTarget"
 
+$OutBlock = 0
+$OutOpen = 0
+
 $OutPorts | % {$test= new-object system.Net.Sockets.TcpClient; $wait = $test.beginConnect($OutboundTarget,$_,$null,$null);($wait.asyncwaithandle.waitone(250,$false))
 	if($test.Connected){
 		write-Host "WARNING: Outbound port $_ is open" -foregroundcolor yellow
 		Write-LOG "`t WARNING: Outbound port $_ is open" 
+		$OutOpen++
 	}
 	else{
 		write-Host "SUCCESS: Outbound port $_ is filtered" -foregroundcolor green
 		Write-LOG "`t SUCCESS: Outbound port $_ is filtered" 
+		$OutBlock++
 	}
 } | select-string " "
 
@@ -88,17 +93,32 @@ if ($InboundTarget -eq "p"){
 write-Host "Starting inbound port scanning to $InboundTarget"
 write-log "`t Starting inbound port scanning to $InboundTarget"
 
+$InBlock = 0
+$InOpen = 0
+
 $InPorts | % {$test= new-object system.Net.Sockets.TcpClient; $wait = $test.beginConnect($InboundTarget,$_,$null,$null);($wait.asyncwaithandle.waitone(250,$false))
 	if($test.Connected){
 		write-Host "WARNING: Inbound port $_ is open" -foregroundcolor yellow
 		Write-LOG "`t WARNING: Inbound port $_ is open" 
+		$InOpen++
 	}
 	else{
 		write-Host "SUCCESS: Inbound port $_ is filtered" -foregroundcolor green
 		Write-LOG "`t SUCCESS: Inbound port $_ is filtered" 
+		$InBlock++
 	}
 } | select-string " "
 
 
+write-Host ""
+write-Host "---------------------------------------------------"
+write-Host "Script Output Summary - Port Scan $(Get-Date)"
+write-Host ""
+write-Host "Outbound ports open: $OutOpen" -foregroundcolor yellow
+write-Host "Outbound ports blocked: $OutBlock" -foregroundcolor green
+write-Host "Inbound ports open: $InOpen" -foregroundcolor yellow
+write-Host "Inbound ports blocked: $InBlock" -foregroundcolor green
+write-Host ""
+write-Host "---------------------------------------------------"
 write-Host ""
 Write-Host "Firewall scanning tests concluded. Please review $Log"
