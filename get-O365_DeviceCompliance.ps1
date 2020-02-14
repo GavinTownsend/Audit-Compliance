@@ -17,6 +17,8 @@
 	.REQUIREMENTS
 		O365 PowerShell plugins https://docs.microsoft.com/en-us/office365/enterprise/powershell/connect-to-office-365-powershell
 		
+			Install-Module MSOnline
+		
 		#Connect as a Non MFA enabled user
 			$AdminCred = Get-Credential admin@example.com
 			Connect-MsolService -Credential $AdminCred
@@ -42,6 +44,10 @@ Catch{$Domain = ""}
 
 $DeviceLog = "C:\Temp\Audit\$Domain O365 Device Compliance $(get-date -f yyyy-MM-dd).csv"
 $Result =@()
+$DeviceCount = 0
+$CompliantCount = 0
+$NotCount = 0
+$UnknownCount = 0
 
 [System.Collections.IDictionary]$script:schema = @{
     
@@ -69,15 +75,28 @@ function createResultObject
 
     
 [PSObject]$devices = get-msoldevice -all
-foreach ($d in $devices)
-{
+foreach ($d in $devices){
+
+	$DeviceCount++
+	
+	$Compliance = $d.GraphDeviceObject.IsCompliant
+	If($Compliance -eq $TRUE){
+		$CompliantCount++
+	}
+	Elseif($Compliance -eq $FALSE){
+		$NotCount++
+	}
+	Else{
+		$UnknownCount++
+	}
+	
 	[PSObject]$deviceResult = createResultObject
 	$deviceResult.DeviceId = $d.DeviceId 
 	$deviceResult.DeviceOSType = $d.DeviceOSType 
 	$deviceResult.DeviceOSVersion = $d.DeviceOSVersion 
 	$deviceResult.DeviceTrustLevel = $d.DeviceTrustLevel
 	$deviceResult.DisplayName = $d.DisplayName
-	$deviceResult.IsCompliant = $d.GraphDeviceObject.IsCompliant
+	$deviceResult.IsCompliant = $Compliance
 	$deviceResult.IsManaged = $d.GraphDeviceObject.IsManaged
 	$deviceResult.DeviceObjectId = $d.ObjectId
 	$deviceResult.RegisteredOwnerUpn = $d.RegisteredOwnerUpn
@@ -85,6 +104,20 @@ foreach ($d in $devices)
 	$deviceResult.ApproximateLastLogonTimestamp = $d.ApproximateLastLogonTimestamp
 
 	$Result+=$deviceResult
+	
 }
 
 $Result | Export-Csv -path $DeviceLog -NoTypeInformation -Encoding UTF8
+
+write-Host ""
+write-Host "--------------------------------------------------------"
+write-Host "Script Output Summary - O365 Device Compliance $(Get-Date)"
+write-Host ""
+Write-Host "There are $DeviceCount devices in the $Domain domain."
+write-host ""
+write-host "Compliant: $CompliantCount" -foregroundcolor green
+write-host "Non-Compliant: $NotCount" -foregroundcolor red
+write-host "Unknown: $UnknownCount"
+write-host ""
+write-Host "--------------------------------------------------------"
+write-host "Log Export Complete to $DeviceLog"
