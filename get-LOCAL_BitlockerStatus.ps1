@@ -31,6 +31,18 @@
 		
 		NB. Some WMI scans do not work on all operating systems (particularly older ones)
 		
+		
+		O365 PowerShell plugins https://docs.microsoft.com/en-us/office365/enterprise/powershell/connect-to-office-365-powershell
+		
+			Install-Module MSOnline
+		
+		#Connect as a Non MFA enabled user
+			$AdminCred = Get-Credential admin@example.com
+			Connect-MsolService -Credential $AdminCred
+
+		#Connect as an MFA enabled user (login GUI)
+			Connect-MsolService
+		
 	.AUDIT CRITERIA
 		Complete a discovery scan of Bitlocker statuses
 			
@@ -47,10 +59,20 @@
 Try{$Domain = $(get-addomain).dnsroot}
 Catch{$Domain = ""}
 
+
 $Log = "C:\temp\Audit\$Domain Bitlocker Status $(get-date -f yyyy-MM-dd).csv"
 
-$Computers = Get-ADComputer -Filter {OperatingSystem -NOTLIKE "*server*" -AND Enabled -eq $TRUE} -Property Name
-$Computers = Get-Random -InputObject $Computers -Count 100
+try{
+	$Recent = (Get-Date).AddDays(-1)
+    $Computers = Get-ADComputer -Filter {OperatingSystem -NOTLIKE "*server*" -AND Enabled -eq $TRUE -AND lastlogondate -gt $Recent } -Property Name 
+    $Auth= "AD"
+}
+Catch{
+    $Computers = Get-MsolDevice -All |? {$_.Enabled -eq $True -and $_.DeviceOsType -eq "Windows"} | Select DisplayName
+    $Auth="Azure"
+}
+$MachinesToScanCount = 100
+$Computers = Get-Random -InputObject $Computers -Count $MachinesToScanCount
 
 $DriveType = "3"
 $DriveLetter = "C:"
@@ -61,7 +83,13 @@ $OnCount = 0
 $UnknownCount = 0
 $OffCount = 0
 
-foreach ($Computer in $Computers.name) {
+foreach ($Computer in $Computers) {
+    if ($Auth -eq "AD"){
+        $Computer = $Computer.name
+    }
+    else{
+       $Computer = $Computer.DisplayName
+    }
 
 	try{
 		write-host "Working on $Computer"
@@ -129,10 +157,28 @@ foreach ($Computer in $Computers.name) {
 
 $Data | sort-object -property Computer,Drive | Export-Csv $Log -notype -Encoding UTF8
 
+Try{$Ratio = $ComputerCount/$MachinesToScanCount}
+Catch{$Ratio = "Unable to calculate"}
+
+write-Host ""
+write-Host "--------------------------------------------------------"
+write-Host "Script Output Summary - Bitlocker Compliance $(Get-Date)"
+write-Host ""
+write-Host "Total Machines to Check: $MachinesToScanCount"
+write-Host "Machines Online Count: $ComputerCount"
+if ($Ratio -gt 0.5) {
+	write-host "Good sample of machines tested" -foregroundcolor green
+}
+else{
+	write-host "Poor sample of machines tested." -foregroundcolor yellow
+	write-host "Please ensure WinRM is enabled and you have local admin access to target endpoints." -foregroundcolor yellow
+}
+write-Host ""
+write-host "There were $DriveCount drives listed"
 write-host ""
-write-host "There were $DriveCount drives listed from $ComputerCount computers"
-write-host "Protection is on: $OnCount"
+write-host "Protection is on: $OnCount" -foregroundcolor green
 write-host "Protection is unknown: $UnknownCount" -foregroundcolor yellow
 write-host "Protection is off: $OffCount" -foregroundcolor red
 write-host ""
-write-host "Log Export Complete to $Log" 
+write-Host "--------------------------------------------------------"
+write-host "Bitlocker scanning complete. Log Export to $Log" 
