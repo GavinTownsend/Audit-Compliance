@@ -92,12 +92,15 @@ foreach ($Computer in $Computers) {
 		try{
 			write-host "Working on $Computer"
 			
-			$Session = [activator]::CreateInstance([type]::GetTypeFromProgID("Microsoft.Update.Session",$Computer))
-			$Searcher= $Session.CreateUpdateSearcher()
-			$History = $Searcher.QueryHistory(0, $Events)
+			<#
+				#CIM Session (NB. Irregular connectivity)
+				$Session = [activator]::CreateInstance([type]::GetTypeFromProgID("Microsoft.Update.Session",$Computer))
+				$Searcher= $Session.CreateUpdateSearcher()
+				$History = $Searcher.QueryHistory(0, $Events)
+			#>
 
-			<#  Event Log Alternative (NB. logs may be cleared, so not alway accurate)
-			
+
+			# Event Log (NB. logs may be cleared, so not alway accurate)
 			$History = Get-WinEvent -ComputerName $Computer -MaxEvents $Events @{
 				Logname='System'
 				ID=19
@@ -108,8 +111,6 @@ foreach ($Computer in $Computers) {
 					Title = $_.Properties.Value[0]
 				}
 			}
-			
-			#>
 
 			$ComputerCount++
 			
