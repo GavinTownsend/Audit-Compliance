@@ -27,9 +27,8 @@
 		
 		Test AV source		http://2016.eicar.org/85-0-Download.html
 		
-		Blacklist source	http://www.squidguard.org/blacklists.html
-		
-		Online Port Scan	https://hackertarget.com/nmap-online-port-scanner/
+		Blacklist sources	https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000Cm5hCAC
+							http://www.squidguard.org/blacklists.html
 		
 	.VERSION HISTORY
 		1.0		Aug 2019	Gavin Townsend		Original Build
@@ -91,35 +90,22 @@ $URLs =@("http:\\evildooinz.com",
 	"http:\\warez.com",
 	"http:\\torrentspy.com",
 	"http:\\cheats.ru",
-	"http:\\candoinet.com.br",
-	"http:\\bc0.cn",
+	"www.cannabis.com",
+	"www.playboyplus.com",
+	"www.redtube.com",
+	"www.kkk.com",
+	"www.hackspc.com",
+	"www.nudistbeaches.nl",
+	"www.thepiratebay.org",
+	"www.emule-project.net",
+	"www.collegehumor.com",
+	"www.grabagun.com",
 	"http:\\newasp.com.cn",
-	"http:\\hackings.cn",
-	"http:\\123xxl.com",
-	"http:\\7sir7.com",
-	"ahttp:\\bu-passwords.com",
-	"ahttp:\\bx4.com",
-	"http:\\adultcomicworld.com",
-	"http:\\adultfreegals.com",
-	"http:\\adult-password.com",
-	"http:\\adultpasswordcracks.com",
-	"http:\\adultunderground.com",
-	"http:\\allowstood.com",
+	"http:\\bx4.com",
 	"http:\\allpasswords.com",
 	"http:\\myproxy.ca",
-	"http:\\myspace-proxy.ca",
-	"http:\\proxylist.ca",
-	"http:\\proxyz.ca",
-	"http:\\pxy.ca",
 	"http:\\webproxy.ca",
-	"http:\\bypass.cc",
-	"http:\\royalbank.com.elpeetha.com.au",
-	"http:\\enpointe.com.au",
-	"http:\\equilibria.com.au",
-	"http:\\erskineheath.com.au",
-	"http:\\etchartisan.com.au",
-	"http:\\eternalbeautyballarat.com.au",
-	"http:\\freexxxsex.com")
+	"http:\\bypass.cc")
 
 $OpenCount = 0
 $BlockCount = 0
@@ -127,12 +113,6 @@ $BlockCount = 0
 foreach ($URL in $URLs){
 	$HTTP_Status = $NULL
 	Try{
-		<#  Legacy PS - not as accurate
-		$HTTP_Request = [System.Net.WebRequest]::Create($URL)
-		$HTTP_Response = $HTTP_Request.GetResponse()
-		$HTTP_Status = [int]$HTTP_Response.StatusCode
-		#>
-		
 		$HTTP_Status = wget $URL | % {$_.StatusCode}
 		
 		If ($HTTP_Status -eq 200) {
