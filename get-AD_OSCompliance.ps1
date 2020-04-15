@@ -199,8 +199,8 @@ foreach ($Computer in $Computers){
 						$ExtendedSupport="May 11 2021"	
 					}
 					else{
-						$MainstreamSupport="May 12 2020"		
-						$ExtendedSupport="May 12 2020"	
+						$MainstreamSupport="November 10 2020"		
+						$ExtendedSupport="November 10 2020"	
 					}	
 				}
 				'10.0 (18362)'{
