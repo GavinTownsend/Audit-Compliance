@@ -116,8 +116,8 @@ foreach ($Device in $Devices){
 			'10.0.16299*'{
 				$Build="1709"
 				if ($Edition -eq "enterprise") {
-					$MainstreamSupport="April 14 2020"		
-					$ExtendedSupport="April 14 2020"	
+					$MainstreamSupport="October 13 2020"		
+					$ExtendedSupport="October 13 2020"	
 				}
 				else{
 					$MainstreamSupport="April 9 2019"		
@@ -143,8 +143,8 @@ foreach ($Device in $Devices){
 					$ExtendedSupport="May 11 2021"	
 				}
 				else{
-					$MainstreamSupport="May 12 2020"		
-					$ExtendedSupport="May 12 2020"	
+					$MainstreamSupport="November 10 2020"		
+					$ExtendedSupport="November 10 2020"	
 				}	
 			}
 			'10.0.18362*'{
@@ -158,15 +158,15 @@ foreach ($Device in $Devices){
 					$ExtendedSupport="December 8 2021"	
 				}
 			}
-			'10.0.18922*'{
-				$Build="TBA"
+			'10.0.18363*'{
+				$Build="1909"
 				if ($Edition -eq "enterprise") {
-					$MainstreamSupport="TBA"		
-					$ExtendedSupport="TBA"
+					$MainstreamSupport="May 10 2022"		
+					$ExtendedSupport="May 10 2022"
 				}
 				else{
-					$MainstreamSupport="TBA"		
-					$ExtendedSupport="TBA"
+					$MainstreamSupport="May 11 2021"		
+					$ExtendedSupport="May 11 2021"
 				}
 			}
 			default {
