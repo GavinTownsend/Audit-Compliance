@@ -168,8 +168,8 @@ foreach ($Computer in $Computers){
 				'10.0 (16299)'{
 					$Build="1709"
 					if ($Computer.OperatingSystem -like "*Enterprise*") {
-						$MainstreamSupport="April 14 2020"		
-						$ExtendedSupport="April 14 2020"	
+						$MainstreamSupport="October 13 2020"		
+						$ExtendedSupport="October 13 2020"	
 					}
 					else{
 						$MainstreamSupport="April 9 2019"		
@@ -214,15 +214,15 @@ foreach ($Computer in $Computers){
 						$ExtendedSupport="December 8 2021"	
 					}
 				}
-				'10.0 (18922)'{
+				'10.0 (18363)'{
 					$Build="TBA"
 					if ($Computer.OperatingSystem -like "*Enterprise*") {
-						$MainstreamSupport="TBA"		
-						$ExtendedSupport="TBA"
+						$MainstreamSupport="May 10 2022"		
+						$ExtendedSupport="May 10 2022"
 					}
 					else{
-						$MainstreamSupport="TBA"		
-						$ExtendedSupport="TBA"
+						$MainstreamSupport="May 11 2021"		
+						$ExtendedSupport="May 11 2021"
 					}
 				}
 				default {
