@@ -51,6 +51,7 @@
 		
 	.VERSION HISTORY
 		1.0		Oct 2019	Gavin Townsend		Original Build
+		1.1		Jun 2020	Gavin Townsend		Update to reference Pwned Passwords V6
 		
 #>
 
