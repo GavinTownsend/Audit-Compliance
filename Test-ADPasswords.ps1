@@ -31,7 +31,7 @@
 			
 			Download "NTLM ordered by hash" and unzip locally (eg c:\audit\pwned-passwords-ntlm-ordered-by-hash-v5.txt)
 			
-			Pwnded Passwords V5 Download file is around 8GB (20GB unzipped) and contains 550+ million hashes
+			Pwnded Passwords V6 Download file is around 8GB (20GB unzipped) and contains 570+ million hashes
 
 		
 		3. DSInternals Framework - https://github.com/MichaelGrafnetter/DSInternals
@@ -117,7 +117,7 @@ Function Test-Passwords{
 		$DB = "$AuditPath\Active Directory\ntds.dit"
 		$Dictionary = "$AuditPath\pwned-passwords-ntlm-ordered-by-hash-v5.txt" 
 		$Report = "$AuditPath\AD Password Quality Report $(get-date -f yyyy-MM-dd).txt"
-		$BadPasswordList = @("Winter2019","Spring2019","Summer2019","Autumn2019""Password123!","Password","12345678","Pa$$w0rd","qwertyuiop") 
+		$BadPasswordList = @("Winter2020","Spring2019","Summer2019","Autumn2020""Password123!","Password","12345678","Pa$$w0rd","qwertyuiop") 
 		$OU = "*OU=Users,DC=MyDomain,DC=com"  # <- Ensure to include the wildcard
 
 		Try{
