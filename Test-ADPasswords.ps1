@@ -118,7 +118,7 @@ Function Test-Passwords{
 		$DB = "$AuditPath\Active Directory\ntds.dit"
 		$Dictionary = "$AuditPath\pwned-passwords-ntlm-ordered-by-hash-v5.txt" 
 		$Report = "$AuditPath\AD Password Quality Report $(get-date -f yyyy-MM-dd).txt"
-		$BadPasswordList = @("Winter2020","Spring2019","Summer2019","Autumn2020""Password123!","Password","12345678","Pa$$w0rd","qwertyuiop") 
+		$BadPasswordList = @("Winter2020","Spring2019","Summer2019","Autumn2020","Password123!","Password","12345678","Pa$$w0rd","qwertyuiop") 
 		$OU = "*OU=Users,DC=MyDomain,DC=com"  # <- Ensure to include the wildcard
 
 		Try{
